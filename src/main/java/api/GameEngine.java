@@ -2,8 +2,6 @@ package api;
 
 import boards.TicTacToeBoard;
 import gamestate.Board;
-import gamestate.Cell;
-import gamestate.GameState;
 import gamestate.Move;
 import gamestate.Player;
 
