@@ -1,7 +1,8 @@
 import java.util.Scanner;
 
+import api.AIEngine;
 import api.GameEngine;
-import boards.TicTacToeBoard;
+import api.RuleEngine;
 import gamestate.Board;
 import gamestate.Cell;
 import gamestate.Move;
@@ -9,27 +10,29 @@ import gamestate.Player;
 
 public class Main {
     public static void main(String[] args) {
+        AIEngine aiEngine = new AIEngine();
+        RuleEngine ruleEngine = new RuleEngine();
         GameEngine gameEngine = new GameEngine();
         Board board = gameEngine.start("TicTacToe");
         int row, col;
         Scanner sc = new Scanner(System.in);
         // make moves
-        while (!gameEngine.isComplete(board).isOver()) {
+        while (!ruleEngine.getState(board).isOver()) {
             Player computer = new Player("O"),
                     player = new Player("X");
             System.out.println("Make your move");
             System.out.println(board);
             row = sc.nextInt();
             col = sc.nextInt();
-            Move oppMove = new Move(new Cell(row, col));
+            Move oppMove = new Move(new Cell(row, col), player);
             gameEngine.move(board, player, oppMove);
             System.out.println(board);
-            if (!gameEngine.isComplete(board).isOver()) {
-                Move computerMove = gameEngine.suggestMove(computer, board);
+            if (!ruleEngine.getState(board).isOver()) {
+                Move computerMove = aiEngine.suggestMove(computer, board);
                 gameEngine.move(board, computer, computerMove);
             }
         }
-        System.out.println("Game Result >> "+gameEngine.isComplete(board));
+        System.out.println("Game Result >> "+ruleEngine.getState(board));
         System.out.println(board);
         sc.close();
     }
