@@ -4,7 +4,7 @@ import gamestate.Board;
 import gamestate.Cell;
 import gamestate.Move;
 
-public class TicTacToeBoard extends Board {
+public class TicTacToeBoard implements Board {
     String[][] cells;
 
     // Constructor for TicTacToeBoard
@@ -24,7 +24,11 @@ public class TicTacToeBoard extends Board {
     }
 
     public void setCell(Cell cell, String symbol) {
-        cells[cell.getRow()][cell.getCol()] = symbol;
+        if(cells[cell.getRow()][cell.getCol()].equals("-")) {
+            cells[cell.getRow()][cell.getCol()] = symbol;
+        } else {
+            throw new IllegalArgumentException("Cell is already occupied");
+        }
     }
 
     @Override
@@ -42,5 +46,20 @@ public class TicTacToeBoard extends Board {
     @Override
     public void move(Move move) {
        setCell(move.getCell(), move.getPlayer().symbol);
+    }
+
+    public String getSymbol(int i, int j) {
+        return cells[i][j];
+    }
+
+    @Override
+    public TicTacToeBoard copy() {
+        TicTacToeBoard copy = new TicTacToeBoard();
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
+                copy.setCell(new Cell(i, j), this.cells[i][j]);
+            }
+        }
+        return copy;
     }
 }
