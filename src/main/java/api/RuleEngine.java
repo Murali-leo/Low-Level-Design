@@ -1,5 +1,8 @@
 package api;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import boards.TicTacToeBoard;
 import gamestate.Board;
 import gamestate.GameState;
@@ -9,63 +12,18 @@ public class RuleEngine {
         if (board instanceof TicTacToeBoard) {
 
             TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
-            String firstCharacter = "-";
-            boolean rowComplete = true;
+            
+            GameState rowWin = findStreak((i, j) -> ticTacToeBoard.getSymbol(i, j));
+            if (rowWin != null) return rowWin;
 
-            for (int i = 0; i < 3; i++) {
-                firstCharacter = ticTacToeBoard.getCell(i, 0);
-                rowComplete = firstCharacter != "-";
-                if (firstCharacter != null) {
-                    for (int j = 1; j < 3; j++) {
-                        if (!firstCharacter.equals(ticTacToeBoard.getCell(i, j))) {
-                            rowComplete = false;
-                        }
-                    }
-                    if (rowComplete) {
-                        return new GameState(true, firstCharacter);
-                    }
-                }
-            }
+            GameState colWin = findStreak((i, j) -> ticTacToeBoard.getSymbol(j, i));    
+            if (colWin != null) return colWin;
 
-            boolean colComplete = true;
-            for (int i = 0; i < 3; i++) {
-                firstCharacter = ticTacToeBoard.getCell(0, i);
-                colComplete = firstCharacter != "-";
-                if (firstCharacter != null) {
-                    for (int j = 1; j < 3; j++) {
-                        if (!firstCharacter.equals(ticTacToeBoard.getCell(j, i))) {
-                            colComplete = false;
-                        }
-                    }
-                    if (colComplete) {
-                        return new GameState(true, firstCharacter);
-                    }
-                }
-            }
+            GameState diagWin = findDiagStreak(i -> ticTacToeBoard.getSymbol(i, i));
+            if (diagWin != null) return diagWin;
 
-            firstCharacter = ticTacToeBoard.getCell(0, 0);
-            boolean diagComplete = firstCharacter != "-";
-            for (int i = 1; i < 3; i++) {
-                if (firstCharacter != null && !firstCharacter.equals(ticTacToeBoard.getCell(i, i))) {
-                    diagComplete = false;
-                }
-            }
-
-            if (diagComplete) {
-                return new GameState(true, firstCharacter);
-            }
-
-            firstCharacter = ticTacToeBoard.getCell(0, 2);
-            boolean revDiagComplete = firstCharacter != "-";
-            for (int i = 1; i < 3; i++) {
-                if (firstCharacter != null && !firstCharacter.equals(ticTacToeBoard.getCell(i, 2 - i))) {
-                    revDiagComplete = false;
-                }
-            }
-
-            if (revDiagComplete) {
-                return new GameState(true, firstCharacter);
-            }
+            GameState revDiagWin = findDiagStreak(i -> ticTacToeBoard.getSymbol(i, 2-i));
+            if (revDiagWin != null) return revDiagWin;
 
             int countOfFilledCells = 0;
             for (int i = 0; i < 3; i++) {
@@ -84,6 +42,36 @@ public class RuleEngine {
         } else {
             return new GameState(false, "-");
         }
+    }
+
+    private GameState findDiagStreak(Function<Integer, String> diag) {
+        boolean possibleStreak = true;
+        for(int i = 0; i < 3; i++) {
+            if(diag.apply(i) == "-" || !diag.apply(0).equals(diag.apply(i))) {
+                possibleStreak = false;
+                break;
+            }
+        }
+        if(possibleStreak) {
+            return new GameState(true, diag.apply(0));
+        }
+        return null;
+    }
+
+    private GameState findStreak(BiFunction<Integer, Integer, String> next) {
+        for(int i = 0; i < 3; i++) {
+            Boolean possibleStreak = true;
+            for (int j = 0; j < 3; j++) {
+                if(next.apply(i, j) == "-" || !next.apply(i, 0).equals(next.apply(i, j))) {
+                    possibleStreak = false;
+                    break;
+                }
+            }
+            if(possibleStreak) {
+                return new GameState(true, next.apply(i, 0));
+            }
+        }
+        return null;
     }
 
 }
