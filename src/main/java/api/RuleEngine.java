@@ -12,18 +12,22 @@ public class RuleEngine {
         if (board instanceof TicTacToeBoard) {
 
             TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
-            
-            GameState rowWin = findStreak((i, j) -> ticTacToeBoard.getSymbol(i, j));
-            if (rowWin != null) return rowWin;
 
-            GameState colWin = findStreak((i, j) -> ticTacToeBoard.getSymbol(j, i));    
-            if (colWin != null) return colWin;
+            GameState rowWin = outerTraversal((i, j) -> ticTacToeBoard.getSymbol(i, j));
+            if (rowWin.isOver())
+                return rowWin;
 
-            GameState diagWin = findDiagStreak(i -> ticTacToeBoard.getSymbol(i, i));
-            if (diagWin != null) return diagWin;
+            GameState colWin = outerTraversal((i, j) -> ticTacToeBoard.getSymbol(j, i));
+            if (colWin.isOver())
+                return colWin;
 
-            GameState revDiagWin = findDiagStreak(i -> ticTacToeBoard.getSymbol(i, 2-i));
-            if (revDiagWin != null) return revDiagWin;
+            GameState diagWin = traverse(i -> ticTacToeBoard.getSymbol(i, i));
+            if (diagWin.isOver())
+                return diagWin;
+
+            GameState revDiagWin = traverse(i -> ticTacToeBoard.getSymbol(i, 2 - i));
+            if (revDiagWin.isOver())
+                return revDiagWin;
 
             int countOfFilledCells = 0;
             for (int i = 0; i < 3; i++) {
@@ -44,34 +48,31 @@ public class RuleEngine {
         }
     }
 
-    private GameState findDiagStreak(Function<Integer, String> diag) {
+    private GameState outerTraversal(BiFunction<Integer, Integer, String> next) {
+        GameState result = new GameState(false, "-");
+        for (int i = 0; i < 3; i++) {
+            final int ii = i;
+            GameState traversal = traverse(j -> next.apply(ii, j));
+            if (traversal.isOver()) {
+                result = traversal;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private GameState traverse(Function<Integer, String> traversal) {
+        GameState result = new GameState(false, "-");
         boolean possibleStreak = true;
-        for(int i = 0; i < 3; i++) {
-            if(diag.apply(i) == "-" || !diag.apply(0).equals(diag.apply(i))) {
+        for (int j = 0; j < 3; j++) {
+            if (traversal.apply(j) == "-" || !traversal.apply(0).equals(traversal.apply(j))) {
                 possibleStreak = false;
                 break;
             }
         }
-        if(possibleStreak) {
-            return new GameState(true, diag.apply(0));
+        if (possibleStreak) {
+            return new GameState(true, traversal.apply(0));
         }
-        return null;
+        return result;
     }
-
-    private GameState findStreak(BiFunction<Integer, Integer, String> next) {
-        for(int i = 0; i < 3; i++) {
-            Boolean possibleStreak = true;
-            for (int j = 0; j < 3; j++) {
-                if(next.apply(i, j) == "-" || !next.apply(i, 0).equals(next.apply(i, j))) {
-                    possibleStreak = false;
-                    break;
-                }
-            }
-            if(possibleStreak) {
-                return new GameState(true, next.apply(i, 0));
-            }
-        }
-        return null;
-    }
-
 }
