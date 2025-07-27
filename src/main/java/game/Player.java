@@ -1,4 +1,4 @@
-package gamestate;
+package game;
 
 public class Player {
 

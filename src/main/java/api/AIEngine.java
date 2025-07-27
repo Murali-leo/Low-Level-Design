@@ -1,10 +1,10 @@
 package api;
 
 import boards.TicTacToeBoard;
-import gamestate.Board;
-import gamestate.Cell;
-import gamestate.Move;
-import gamestate.Player;
+import game.Board;
+import game.Cell;
+import game.Move;
+import game.Player;
 
 public class AIEngine {
     public Move suggestMove(Player computer, Board board) {
