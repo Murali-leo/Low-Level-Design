@@ -3,10 +3,10 @@ import java.util.Scanner;
 import api.AIEngine;
 import api.GameEngine;
 import api.RuleEngine;
-import gamestate.Board;
-import gamestate.Cell;
-import gamestate.Move;
-import gamestate.Player;
+import game.Board;
+import game.Cell;
+import game.Move;
+import game.Player;
 
 public class Main {
     public static void main(String[] args) {

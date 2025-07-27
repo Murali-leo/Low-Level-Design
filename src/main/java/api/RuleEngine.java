@@ -1,50 +1,55 @@
 package api;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import boards.TicTacToeBoard;
-import gamestate.Board;
-import gamestate.GameState;
+import game.Board;
+import game.GameState;
 
 public class RuleEngine {
-    public GameState getState(Board board) {
-        if (board instanceof TicTacToeBoard) {
-
-            TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
-
-            GameState rowWin = outerTraversal((i, j) -> ticTacToeBoard.getSymbol(i, j));
-            if (rowWin.isOver())
-                return rowWin;
-
-            GameState colWin = outerTraversal((i, j) -> ticTacToeBoard.getSymbol(j, i));
-            if (colWin.isOver())
-                return colWin;
-
-            GameState diagWin = traverse(i -> ticTacToeBoard.getSymbol(i, i));
-            if (diagWin.isOver())
-                return diagWin;
-
-            GameState revDiagWin = traverse(i -> ticTacToeBoard.getSymbol(i, 2 - i));
-            if (revDiagWin.isOver())
-                return revDiagWin;
-
+    Map<String, List<Rule>> ruleMap = new HashMap<>();
+    public RuleEngine() {
+        // Initialize rules if needed
+        ruleMap.put(TicTacToeBoard.class.getSimpleName(), new ArrayList<>());
+        ruleMap.get(TicTacToeBoard.class.getSimpleName()).add(new Rule<TicTacToeBoard>(board -> outerTraversal((i,j ) -> board.getSymbol(i, j))));
+        ruleMap.get(TicTacToeBoard.class.getSimpleName()).add(new Rule<TicTacToeBoard>(board -> outerTraversal((i,j ) -> board.getSymbol(j, i))));
+        ruleMap.get(TicTacToeBoard.class.getSimpleName()).add(new Rule<TicTacToeBoard>(board -> traverse(i -> board.getSymbol(i, i))));
+        ruleMap.get(TicTacToeBoard.class.getSimpleName()).add(new Rule<TicTacToeBoard>(board -> traverse(i -> board.getSymbol(i, 2 - i))));
+        ruleMap.get(TicTacToeBoard.class.getSimpleName()).add(new Rule<TicTacToeBoard>(board -> {
             int countOfFilledCells = 0;
             for (int i = 0; i < 3; i++) {
                 for (int j = 0; j < 3; j++) {
-                    if (ticTacToeBoard.getCell(i, j) != "-") {
+                    if (board.getCell(i, j) != "-") {
                         countOfFilledCells++;
                     }
                 }
             }
-
             if (countOfFilledCells == 9) {
                 return new GameState(true, "draw");
-            } else {
-                return new GameState(false, "-");
             }
-        } else {
+            return new GameState(false, "-"); 
+        }));
+    }
+    
+    @SuppressWarnings("unchecked")
+    public GameState getState(Board board) {
+        if (board instanceof TicTacToeBoard) {
+
+            TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
+            for (Rule<TicTacToeBoard> rule : ruleMap.get(TicTacToeBoard.class.getSimpleName())) {
+                GameState state = rule.condition.apply(ticTacToeBoard);
+                if (state.isOver()) {
+                    return state;
+                }
+            }
             return new GameState(false, "-");
+        } else {
+            throw new IllegalArgumentException("Unsupported board type: " + board.getClass().getSimpleName());
         }
     }
 
@@ -75,4 +80,13 @@ public class RuleEngine {
         }
         return result;
     }
+}
+
+class Rule<T extends Board> {
+    Function<T, GameState> condition;
+
+    public Rule(Function<T, GameState> condition) {
+        this.condition = condition;
+    }
+    
 }
