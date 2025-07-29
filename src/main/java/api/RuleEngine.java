@@ -1,11 +1,7 @@
 package api;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import boards.TicTacToeBoard;
 import game.Board;
@@ -19,6 +15,7 @@ import game.Rule;
 import game.RuleSet;
 
 public class RuleEngine {
+
     Map<String, RuleSet> ruleMap = new HashMap<>();
 
     public RuleEngine() {
@@ -72,9 +69,9 @@ public class RuleEngine {
 
     public GameState getState(Board board) {
         if (board instanceof TicTacToeBoard) {
-
             TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
-            for (Rule<TicTacToeBoard> rule : ruleMap.get(TicTacToeBoard.class.getSimpleName())) {
+            RuleSet<TicTacToeBoard> rules = (RuleSet<TicTacToeBoard>) ruleMap.get(TicTacToeBoard.class.getSimpleName());
+            for (Rule<TicTacToeBoard> rule : rules) {
                 GameState state = rule.condition.apply(ticTacToeBoard);
                 if (state.isOver()) {
                     return state;
