@@ -15,35 +15,15 @@ import game.GameInfoBuilder;
 import game.GameState;
 import game.Move;
 import game.Player;
+import game.Rule;
+import game.RuleSet;
 
 public class RuleEngine {
-    Map<String, List<Rule>> ruleMap = new HashMap<>();
+    Map<String, RuleSet> ruleMap = new HashMap<>();
 
     public RuleEngine() {
         // Initialize rules if needed
-        ruleMap.put(TicTacToeBoard.class.getSimpleName(), new ArrayList<>());
-        ruleMap.get(TicTacToeBoard.class.getSimpleName())
-                .add(new Rule<TicTacToeBoard>(board -> outerTraversal((i, j) -> board.getSymbol(i, j))));
-        ruleMap.get(TicTacToeBoard.class.getSimpleName())
-                .add(new Rule<TicTacToeBoard>(board -> outerTraversal((i, j) -> board.getSymbol(j, i))));
-        ruleMap.get(TicTacToeBoard.class.getSimpleName())
-                .add(new Rule<TicTacToeBoard>(board -> traverse(i -> board.getSymbol(i, i))));
-        ruleMap.get(TicTacToeBoard.class.getSimpleName())
-                .add(new Rule<TicTacToeBoard>(board -> traverse(i -> board.getSymbol(i, 2 - i))));
-        ruleMap.get(TicTacToeBoard.class.getSimpleName()).add(new Rule<TicTacToeBoard>(board -> {
-            int countOfFilledCells = 0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    if (board.getCell(i, j) != "-") {
-                        countOfFilledCells++;
-                    }
-                }
-            }
-            if (countOfFilledCells == 9) {
-                return new GameState(true, "draw");
-            }
-            return new GameState(false, "-");
-        }));
+        ruleMap.put(TicTacToeBoard.class.getSimpleName(), TicTacToeBoard.getRules());
     }
 
     public GameInfo getInfo(Board board) {
@@ -90,7 +70,6 @@ public class RuleEngine {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public GameState getState(Board board) {
         if (board instanceof TicTacToeBoard) {
 
@@ -106,41 +85,4 @@ public class RuleEngine {
             throw new IllegalArgumentException("Unsupported board type: " + board.getClass().getSimpleName());
         }
     }
-
-    private GameState outerTraversal(BiFunction<Integer, Integer, String> next) {
-        GameState result = new GameState(false, "-");
-        for (int i = 0; i < 3; i++) {
-            final int ii = i;
-            GameState traversal = traverse(j -> next.apply(ii, j));
-            if (traversal.isOver()) {
-                result = traversal;
-                break;
-            }
-        }
-        return result;
-    }
-
-    private GameState traverse(Function<Integer, String> traversal) {
-        GameState result = new GameState(false, "-");
-        boolean possibleStreak = true;
-        for (int j = 0; j < 3; j++) {
-            if (traversal.apply(j) == "-" || !traversal.apply(0).equals(traversal.apply(j))) {
-                possibleStreak = false;
-                break;
-            }
-        }
-        if (possibleStreak) {
-            return new GameState(true, traversal.apply(0));
-        }
-        return result;
-    }
-}
-
-class Rule<T extends Board> {
-    Function<T, GameState> condition;
-
-    public Rule(Function<T, GameState> condition) {
-        this.condition = condition;
-    }
-
 }
