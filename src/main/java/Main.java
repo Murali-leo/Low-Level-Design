@@ -10,7 +10,7 @@ import game.Player;
 
 public class Main {
     public static void main(String[] args) {
-        AIEngine aiEngine = new AIEngine();
+        AIEngine aiEngine = new AIEngine(new RuleEngine());
         RuleEngine ruleEngine = new RuleEngine();
         GameEngine gameEngine = new GameEngine();
         Board board = gameEngine.start("TicTacToe");
