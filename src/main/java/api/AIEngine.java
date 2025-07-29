@@ -1,11 +1,14 @@
 package api;
 
+import java.util.Optional;
+
 import boards.TicTacToeBoard;
 import game.Board;
 import game.Cell;
-import game.GameInfo;
 import game.Move;
 import game.Player;
+import placements.OffensivePlacement;
+import placements.Placement;
 
 public class AIEngine {
 
@@ -38,34 +41,13 @@ public class AIEngine {
     }
 
     private Cell getOptimalMove(Player player, TicTacToeBoard board) {
-        // Offensive moves
-        Cell best = offense(player, board);
-        if (best != null) {
-            return best;
-        }
-        // Defensive moves
-        Cell defensive = defensive(player, board);
-        if (defensive != null) {
-            return defensive;
-        }
-        // Check for forks
-        GameInfo gameInfo = ruleEngine.getInfo(board);
-        if(gameInfo.hasAFork()) {
-            best = gameInfo.getForkCell();
-            return best;
-        }
-        // If the center is available, play there
-        if (board.getSymbol(1, 1).equals("-")) {
-            return new Cell(1, 1);
-        }
-        // If the corners are available, play in one of them
-        int[][] corners = {{0, 0}, {0, 2}, {2, 0}, {2, 2}};
-        for(int i = 0; i < corners.length; i++) {
-            int x = corners[i][0];
-            int y = corners[i][1];
-            if (board.getSymbol(x, y).equals("-")) {
-                return new Cell(x, y);
+        Placement placement = OffensivePlacement.get();
+        while (placement.next() != null) {
+            Optional<Cell> place = placement.place(board, player);
+            if (place.isPresent()) {
+                return place.get();
             }
+            placement = placement.next();
         }
         return null;
     }
