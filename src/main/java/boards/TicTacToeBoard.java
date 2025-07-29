@@ -69,7 +69,7 @@ public class TicTacToeBoard implements Board {
         return copy;
     }
 
-    public static RuleSet getRules() {
+    public static RuleSet<TicTacToeBoard> getRules() {
 
         RuleSet rules = new RuleSet();
        
