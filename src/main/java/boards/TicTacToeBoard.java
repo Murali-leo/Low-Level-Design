@@ -53,7 +53,7 @@ public class TicTacToeBoard implements CellBoard {
 
     @Override
     public TicTacToeBoard move(Move move) {
-        history.add(this);
+        history.add(new Representation(this));
         TicTacToeBoard board = this.copy();
         board.setCell(move.getCell(), move.getPlayer().symbol);
         return board;
@@ -71,6 +71,7 @@ public class TicTacToeBoard implements CellBoard {
                 copy.setCell(new Cell(i, j), this.cells[i][j]);
             }
         }
+        copy.history = this.history; // Copy the history as well
         return copy;
     }
 
@@ -130,9 +131,9 @@ public class TicTacToeBoard implements CellBoard {
 
 class History {
 
-    List<Board> boards = new ArrayList();
+    List<Representation> boards = new ArrayList();
 
-    public Board getBoardAtMove(int moveNumber) {
+    public Representation getBoardAtMove(int moveNumber) {
         moveNumber = moveNumber - 1;
         int initialSize = boards.size();
         for(int i = 0; i < initialSize - (moveNumber + 1); i++) {
@@ -141,12 +142,19 @@ class History {
         return boards.get(moveNumber);
     }
 
-    public Board undo() {
+    public Representation undo() {
         boards.remove(boards.size() - 1);
         return boards.get(boards.size() - 1);
     }
 
-    public void add(Board board) {
+    public void add(Representation board) {
         boards.add(boards.size() + 1, board);
+    }
+}
+
+class Representation {
+    String representation;
+    public Representation(Board board) {
+        this.representation = board.toString();
     }
 }
