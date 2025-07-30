@@ -3,8 +3,8 @@ package api;
 import java.util.HashMap;
 import java.util.Map;
 
+import boards.Board;
 import boards.TicTacToeBoard;
-import game.Board;
 import game.Cell;
 import game.GameInfo;
 import game.GameInfoBuilder;
@@ -74,7 +74,7 @@ public class RuleEngine {
         if (board instanceof TicTacToeBoard) {
             TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
             RuleSet<TicTacToeBoard> rules = (RuleSet<TicTacToeBoard>) ruleMap.get(TicTacToeBoard.class.getSimpleName());
-            for (Rule<TicTacToeBoard> rule : rules) {
+            for (Rule rule : rules) {
                 GameState state = rule.condition.apply(ticTacToeBoard);
                 if (state.isOver()) {
                     return state;

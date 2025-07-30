@@ -1,7 +1,7 @@
 package api;
 
+import boards.Board;
 import boards.TicTacToeBoard;
-import game.Board;
 import game.Move;
 import game.Player;
 

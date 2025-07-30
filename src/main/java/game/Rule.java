@@ -2,10 +2,12 @@ package game;
 
 import java.util.function.Function;
 
-public class Rule<T extends Board> {
-    public Function<T, GameState> condition;
+import boards.CellBoard;
 
-    public Rule(Function<T, GameState> condition) {
+public class Rule {
+    public Function<CellBoard, GameState> condition;
+
+    public Rule(Function<CellBoard, GameState> condition) {
         this.condition = condition;
     }
 

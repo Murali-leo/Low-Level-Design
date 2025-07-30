@@ -2,8 +2,8 @@ package api;
 
 import java.util.Optional;
 
+import boards.Board;
 import boards.TicTacToeBoard;
-import game.Board;
 import game.Cell;
 import game.Move;
 import game.Player;
