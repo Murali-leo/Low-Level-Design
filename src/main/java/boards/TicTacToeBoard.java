@@ -1,5 +1,7 @@
 package boards;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -11,6 +13,7 @@ import game.RuleSet;
 
 public class TicTacToeBoard implements CellBoard {
     String[][] cells;
+    History history = new History();
 
     // Constructor for TicTacToeBoard
     public TicTacToeBoard() {
@@ -29,7 +32,7 @@ public class TicTacToeBoard implements CellBoard {
     }
 
     public void setCell(Cell cell, String symbol) {
-        if(cells[cell.getRow()][cell.getCol()].equals("-")) {
+        if (cells[cell.getRow()][cell.getCol()].equals("-")) {
             cells[cell.getRow()][cell.getCol()] = symbol;
         } else {
             throw new IllegalArgumentException("Cell is already occupied");
@@ -49,8 +52,11 @@ public class TicTacToeBoard implements CellBoard {
     }
 
     @Override
-    public void move(Move move) {
-       setCell(move.getCell(), move.getPlayer().symbol);
+    public TicTacToeBoard move(Move move) {
+        history.add(this);
+        TicTacToeBoard board = this.copy();
+        board.setCell(move.getCell(), move.getPlayer().symbol);
+        return board;
     }
 
     public String getSymbol(int i, int j) {
@@ -71,7 +77,7 @@ public class TicTacToeBoard implements CellBoard {
     public static RuleSet<TicTacToeBoard> getRules() {
 
         RuleSet rules = new RuleSet();
-       
+
         rules.add(new Rule(board -> outerTraversal((i, j) -> board.getSymbol(i, j))));
         rules.add(new Rule(board -> outerTraversal((i, j) -> board.getSymbol(j, i))));
         rules.add(new Rule(board -> traverse(i -> board.getSymbol(i, i))));
@@ -119,5 +125,28 @@ public class TicTacToeBoard implements CellBoard {
             return new GameState(true, traversal.apply(0));
         }
         return result;
+    }
+}
+
+class History {
+
+    List<Board> boards = new ArrayList();
+
+    public Board getBoardAtMove(int moveNumber) {
+        moveNumber = moveNumber - 1;
+        int initialSize = boards.size();
+        for(int i = 0; i < initialSize - (moveNumber + 1); i++) {
+            boards.remove(boards.size() - 1);
+        }
+        return boards.get(moveNumber);
+    }
+
+    public Board undo() {
+        boards.remove(boards.size() - 1);
+        return boards.get(boards.size() - 1);
+    }
+
+    public void add(Board board) {
+        boards.add(boards.size() + 1, board);
     }
 }
