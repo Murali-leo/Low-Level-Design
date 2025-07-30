@@ -5,7 +5,7 @@ import org.junit.Assert;
 
 import api.GameEngine;
 import api.RuleEngine;
-import game.Board;
+import boards.Board;
 import game.Cell;
 import game.Move;
 import game.Player;
