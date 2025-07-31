@@ -1,10 +1,15 @@
 package boards;
 
-import gamestate.Board;
-import gamestate.Cell;
-import gamestate.Move;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-public class TicTacToeBoard implements Board {
+import game.Cell;
+import game.GameState;
+import game.Move;
+import game.Rule;
+import game.RuleSet;
+
+public class TicTacToeBoard implements CellBoard {
     String[][] cells;
 
     // Constructor for TicTacToeBoard
@@ -61,5 +66,58 @@ public class TicTacToeBoard implements Board {
             }
         }
         return copy;
+    }
+
+    public static RuleSet<TicTacToeBoard> getRules() {
+
+        RuleSet rules = new RuleSet();
+       
+        rules.add(new Rule(board -> outerTraversal((i, j) -> board.getSymbol(i, j))));
+        rules.add(new Rule(board -> outerTraversal((i, j) -> board.getSymbol(j, i))));
+        rules.add(new Rule(board -> traverse(i -> board.getSymbol(i, i))));
+        rules.add(new Rule(board -> traverse(i -> board.getSymbol(i, 2 - i))));
+        rules.add(new Rule(board -> {
+            int countOfFilledCells = 0;
+            for (int i = 0; i < 3; i++) {
+                for (int j = 0; j < 3; j++) {
+                    if (board.getSymbol(i, j) != "-") {
+                        countOfFilledCells++;
+                    }
+                }
+            }
+            if (countOfFilledCells == 9) {
+                return new GameState(true, "draw");
+            }
+            return new GameState(false, "-");
+        }));
+        return rules;
+    }
+
+    private static GameState outerTraversal(BiFunction<Integer, Integer, String> next) {
+        GameState result = new GameState(false, "-");
+        for (int i = 0; i < 3; i++) {
+            final int ii = i;
+            GameState traversal = traverse(j -> next.apply(ii, j));
+            if (traversal.isOver()) {
+                result = traversal;
+                break;
+            }
+        }
+        return result;
+    }
+
+    private static GameState traverse(Function<Integer, String> traversal) {
+        GameState result = new GameState(false, "-");
+        boolean possibleStreak = true;
+        for (int j = 0; j < 3; j++) {
+            if (traversal.apply(j) == "-" || !traversal.apply(0).equals(traversal.apply(j))) {
+                possibleStreak = false;
+                break;
+            }
+        }
+        if (possibleStreak) {
+            return new GameState(true, traversal.apply(0));
+        }
+        return result;
     }
 }

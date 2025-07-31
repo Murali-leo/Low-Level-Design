@@ -1,89 +1,88 @@
 package api;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import boards.Board;
 import boards.TicTacToeBoard;
-import gamestate.Board;
-import gamestate.GameState;
+import game.Cell;
+import game.GameInfo;
+import game.GameInfoBuilder;
+import game.GameState;
+import game.Move;
+import game.Player;
+import game.Rule;
+import game.RuleSet;
 
 public class RuleEngine {
-    public GameState getState(Board board) {
+
+    Map<String, RuleSet> ruleMap = new HashMap<>();
+
+    public RuleEngine() {
+        // Initialize rules if needed
+        ruleMap.put(TicTacToeBoard.class.getSimpleName(), TicTacToeBoard.getRules());
+    }
+
+    public GameInfo getInfo(Board board) {
         if (board instanceof TicTacToeBoard) {
-
-            TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
-            String firstCharacter = "-";
-            boolean rowComplete = true;
-
-            for (int i = 0; i < 3; i++) {
-                firstCharacter = ticTacToeBoard.getCell(i, 0);
-                rowComplete = firstCharacter != "-";
-                if (firstCharacter != null) {
-                    for (int j = 1; j < 3; j++) {
-                        if (!firstCharacter.equals(ticTacToeBoard.getCell(i, j))) {
-                            rowComplete = false;
+            GameState gameState = getState(board);
+            final String[] players = new String[] { "X", "O" };
+            Cell forkCell = null; 
+            for (int index = 0; index < players.length; index++) {
+                for (int i = 0; i < 3; i++) {
+                    for (int j = 0; j < 3; j++) {
+                        Board b = board.copy();
+                        Player player = new Player(players[index]);
+                        b.move(new Move(new Cell(i, j), player));
+                        boolean canStillWin = false;
+                        for (int k = 0; k < 3; k++) {
+                            for (int l = 0; l < 3; l++) {
+                                Board tempBoard = b.copy();
+                                forkCell = new Cell(k, l);
+                                tempBoard.move(new Move(forkCell, player.flip()));
+                                if (getState(tempBoard).getWinner().equals(player.flip().symbol())) {
+                                    canStillWin = true;
+                                    break;
+                                }
+                            }
+                            if (canStillWin) {
+                                break;
+                            }
+                        }
+                        if (canStillWin) {
+                            return new GameInfoBuilder()
+                                    .isOver(gameState.isOver())
+                                    .winner(gameState.getWinner())
+                                    .hasFork(true)
+                                    .forkCell(forkCell)
+                                    .player(player.flip())
+                                    .build();
                         }
                     }
-                    if (rowComplete) {
-                        return new GameState(true, firstCharacter);
-                    }
                 }
             }
-
-            boolean colComplete = true;
-            for (int i = 0; i < 3; i++) {
-                firstCharacter = ticTacToeBoard.getCell(0, i);
-                colComplete = firstCharacter != "-";
-                if (firstCharacter != null) {
-                    for (int j = 1; j < 3; j++) {
-                        if (!firstCharacter.equals(ticTacToeBoard.getCell(j, i))) {
-                            colComplete = false;
-                        }
-                    }
-                    if (colComplete) {
-                        return new GameState(true, firstCharacter);
-                    }
-                }
-            }
-
-            firstCharacter = ticTacToeBoard.getCell(0, 0);
-            boolean diagComplete = firstCharacter != "-";
-            for (int i = 1; i < 3; i++) {
-                if (firstCharacter != null && !firstCharacter.equals(ticTacToeBoard.getCell(i, i))) {
-                    diagComplete = false;
-                }
-            }
-
-            if (diagComplete) {
-                return new GameState(true, firstCharacter);
-            }
-
-            firstCharacter = ticTacToeBoard.getCell(0, 2);
-            boolean revDiagComplete = firstCharacter != "-";
-            for (int i = 1; i < 3; i++) {
-                if (firstCharacter != null && !firstCharacter.equals(ticTacToeBoard.getCell(i, 2 - i))) {
-                    revDiagComplete = false;
-                }
-            }
-
-            if (revDiagComplete) {
-                return new GameState(true, firstCharacter);
-            }
-
-            int countOfFilledCells = 0;
-            for (int i = 0; i < 3; i++) {
-                for (int j = 0; j < 3; j++) {
-                    if (ticTacToeBoard.getCell(i, j) != "-") {
-                        countOfFilledCells++;
-                    }
-                }
-            }
-
-            if (countOfFilledCells == 9) {
-                return new GameState(true, "draw");
-            } else {
-                return new GameState(false, "-");
-            }
+            return new GameInfoBuilder()
+                    .isOver(gameState.isOver())
+                    .winner(gameState.getWinner())
+                    .build();
         } else {
-            return new GameState(false, "-");
+            throw new IllegalArgumentException("Unsupported board type: " + board.getClass().getSimpleName());
         }
     }
 
+    public GameState getState(Board board) {
+        if (board instanceof TicTacToeBoard) {
+            TicTacToeBoard ticTacToeBoard = (TicTacToeBoard) board;
+            RuleSet<TicTacToeBoard> rules = (RuleSet<TicTacToeBoard>) ruleMap.get(TicTacToeBoard.class.getSimpleName());
+            for (Rule rule : rules) {
+                GameState state = rule.condition.apply(ticTacToeBoard);
+                if (state.isOver()) {
+                    return state;
+                }
+            }
+            return new GameState(false, "-");
+        } else {
+            throw new IllegalArgumentException("Unsupported board type: " + board.getClass().getSimpleName());
+        }
+    }
 }

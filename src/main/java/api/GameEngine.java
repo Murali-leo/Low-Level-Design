@@ -1,9 +1,9 @@
 package api;
 
+import boards.Board;
 import boards.TicTacToeBoard;
-import gamestate.Board;
-import gamestate.Move;
-import gamestate.Player;
+import game.Move;
+import game.Player;
 
 public class GameEngine {
 

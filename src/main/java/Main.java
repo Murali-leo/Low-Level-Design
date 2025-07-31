@@ -3,14 +3,14 @@ import java.util.Scanner;
 import api.AIEngine;
 import api.GameEngine;
 import api.RuleEngine;
-import gamestate.Board;
-import gamestate.Cell;
-import gamestate.Move;
-import gamestate.Player;
+import boards.Board;
+import game.Cell;
+import game.Move;
+import game.Player;
 
 public class Main {
     public static void main(String[] args) {
-        AIEngine aiEngine = new AIEngine();
+        AIEngine aiEngine = new AIEngine(new RuleEngine());
         RuleEngine ruleEngine = new RuleEngine();
         GameEngine gameEngine = new GameEngine();
         Board board = gameEngine.start("TicTacToe");
