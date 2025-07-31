@@ -99,8 +99,7 @@ public class AIEngine {
             for (int j = 0; j < 3; j++) {
                 if (board.getSymbol(i, j).equals("-")) {
                     Move move = new Move(new Cell(i, j), player.flip());
-                    TicTacToeBoard boardCopy = board.copy();
-                    boardCopy.move(move);
+                    TicTacToeBoard boardCopy = board.move(move);
                     if (ruleEngine.getState(boardCopy).isOver()) {
                         return new Cell(i, j);
                     }
@@ -117,8 +116,7 @@ public class AIEngine {
                 if (board.getSymbol(i, j).equals("-")) {
                     // Check if placing the player's symbol here would win the game
                     Move move = new Move(new Cell(i, j), player);
-                    TicTacToeBoard boardCopy = board.copy();
-                    boardCopy.move(move);
+                    TicTacToeBoard boardCopy = board.move(move);
                     if (ruleEngine.getState(boardCopy).isOver()) {
                         return new Cell(i, j);
                     }
